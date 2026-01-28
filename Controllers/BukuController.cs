@@ -3,44 +3,44 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using tesKPL.Models;
 
-namespace tesKPL.Controllers
+namespace BukuAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class BukuController : ControllerBase
     {
-
         private readonly string filePath = "Data/books.json";
 
-        public List<Buku> ReadJson()
+        private List<Buku> ReadBooks()
         {
-           if (!System.IO.File.Exists(filePath))
-            {
+            if (!System.IO.File.Exists(filePath))
                 return new List<Buku>();
-            }
 
             var json = System.IO.File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<List<Buku>>(json) ?? new List<Buku>();
+            return JsonSerializer.Deserialize<List<Buku>>(json)
+                   ?? new List<Buku>();
         }
 
-        public void WriteJson(List<Buku> buku)
+        private void WriteBooks(List<Buku> books)
         {
-            var json = JsonSerializer.Serialize(buku, new JsonSerializerOptions
+            var json = JsonSerializer.Serialize(books, new JsonSerializerOptions
             {
-                WriteIndented = true,
+                WriteIndented = true
             });
+
+            System.IO.File.WriteAllText(filePath, json);
         }
 
         [HttpGet]
-        public ActionResult<List<Buku>> GetBuku()
+        public ActionResult<List<Buku>> GetAll()
         {
-            return ReadJson();
+            return Ok(ReadBooks());
         }
 
         [HttpGet("{id}")]
         public ActionResult<Buku> GetBukuById(int idBuku, Buku buku)
         {
-            var books = ReadJson();
+            var books = ReadBooks();
 
             if (idBuku < 0 || idBuku > books.Count)
             {
@@ -56,45 +56,46 @@ namespace tesKPL.Controllers
             return data;
         }
 
-        [HttpPost]
-        public ActionResult<List<Buku>> TambahBuku(Buku buku)
-        {
-            var books = ReadJson();
-            books.Add(buku);
-            WriteJson(books);
-
-            return ReadJson();
-        }
-
         [HttpPut("{id}")]
-        public ActionResult<List<Buku>> EditBuku(int id, Buku buku)
+        public ActionResult<Buku> Put(int id, Buku books)
         {
-            var books = ReadJson();
+            var buku = ReadBooks();
 
-            if (id < 0 || id > books.Count)
-            {
-                return NotFound();
-            }
+            if (id < 0 || id >= buku.Count)
+                return NotFound("Movie tidak ditemukan");
 
-            books[id] = buku;
-            WriteJson(books);
+            buku[id] = books;
+            WriteBooks(buku);
 
-            return ReadJson();
+            return Ok(buku);
         }
 
+        [HttpPost]
+        public ActionResult Add(Buku books)
+        {
+            if (books == null)
+                return BadRequest("Data movie tidak valid");
+
+            var buku = ReadBooks();
+            buku.Add(books);
+            WriteBooks(buku);
+
+            return Ok("Movie berhasil ditambahkan");
+        }
 
         [HttpDelete("{id}")]
-        public ActionResult<List<Buku>> HapusBuku(int id)
+        public ActionResult Delete(int id)
         {
-            var books = ReadJson();
+            var buku = ReadBooks();
 
-            if (id < 0 || id > books.Count)
-            {
-                return NotFound();
-            }
+            if (id < 0 || id >= buku.Count)
+                return NotFound("Movie tidak ditemukan");
 
-            books.RemoveAt(id);
-            return ReadJson();
+            buku.RemoveAt(id);
+            WriteBooks(buku);
+
+            return Ok("Movie berhasil dihapus");
         }
+
     }
 }
