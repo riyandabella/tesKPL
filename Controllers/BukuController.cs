@@ -38,16 +38,16 @@ namespace BukuAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Buku> GetBukuById(int idBuku, Buku buku)
+        public ActionResult<Buku> GetBukuById(int id, Buku buku)
         {
             var books = ReadBooks();
 
-            if (idBuku < 0 || idBuku > books.Count)
+            if (id < 0 || id > books.Count)
             {
                 return NotFound();
             }
 
-            var data = books.FirstOrDefault(m => m.id == idBuku);
+            var data = books.FirstOrDefault(m => m.judul == buku.judul);
 
             if (data == null)
             {
