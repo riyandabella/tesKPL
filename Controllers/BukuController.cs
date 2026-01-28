@@ -10,7 +10,7 @@ namespace tesKPL.Controllers
     public class BukuController : ControllerBase
     {
 
-        public string filePath = "Data/books.json";
+        private readonly string filePath = "Data/books.json";
 
         public List<Buku> ReadJson()
         {
@@ -38,14 +38,22 @@ namespace tesKPL.Controllers
         }
 
         [HttpGet("{id}")]
-        public ActionResult<List<Buku>> GetBukuById(int id, Buku buku)
+        public ActionResult<Buku> GetBukuById(int idBuku, Buku buku)
         {
-            if (id < 0)
+            var books = ReadJson();
+
+            if (idBuku < 0 || idBuku > books.Count)
             {
-                return NotFound("pastikan id benar");
+                return NotFound();
             }
 
-            return ReadJson(buku[id]);
+            var data = books.FirstOrDefault(m => m.id == idBuku);
+
+            if (data == null)
+            {
+                return NotFound();
+            }
+            return data;
         }
 
         [HttpPost]
@@ -59,13 +67,32 @@ namespace tesKPL.Controllers
         }
 
         [HttpPut("{id}")]
+        public ActionResult<List<Buku>> EditBuku(int id, Buku buku)
+        {
+            var books = ReadJson();
+
+            if (id < 0 || id > books.Count)
+            {
+                return NotFound();
+            }
+
+            books[id] = buku;
+            WriteJson(books);
+
+            return ReadJson();
+        }
 
 
         [HttpDelete("{id}")]
         public ActionResult<List<Buku>> HapusBuku(int id)
         {
-            if ()
             var books = ReadJson();
+
+            if (id < 0 || id > books.Count)
+            {
+                return NotFound();
+            }
+
             books.RemoveAt(id);
             return ReadJson();
         }
