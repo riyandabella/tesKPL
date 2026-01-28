@@ -1,0 +1,6 @@
+@tesKPL_HostAddress = http://localhost:5103
+
+GET {{tesKPL_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
